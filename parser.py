@@ -1,0 +1,148 @@
+from lox_ast import Expr, Binary, Unary, Literal, Grouping
+from token_type import TokenType
+from lex_token import Token
+from error import ParseError, parse_error
+
+class Parser():
+    def __init__(self, tokens):
+        self.tokens = tokens
+        self.current = 0
+
+    def parse(self):
+        try:
+            return self.expression()
+        except Exception as e:
+            return None
+
+    def expression(self):
+        return self.equality()
+
+    def equality(self) -> Expr:
+        expr: Expr = self.comparision()
+
+        while (self.match(TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL)):
+            operator: Token = self.previous()
+            right: Expr = self.comparision()
+            expr = Binary(expr, operator, right)
+
+        return expr
+    
+    def comparision(self) -> Expr:
+        expr: Expr = self.term()
+
+        while (self.match(TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL)):
+            operator: Token = self.previous()
+            right: Expr = self.term()
+            expr = Binary(expr, operator, right)
+
+        return expr
+    
+    def term(self) -> Expr:
+        expr: Expr = self.factor()
+
+
+        while (self.match(TokenType.MINUS, TokenType.PLUS)):
+            operator = self.previous()
+            right = self.factor()
+            expr = Binary(expr, operator, right)
+        return expr
+    
+    def factor(self) -> Expr:
+        expr = self.unary()
+
+        while(self.match(TokenType.SLASH, TokenType.STAR)):
+            operator = self.previous()
+            right = self.unary()
+            expr = Binary(expr, operator, right)
+
+        return expr
+    
+    def unary(self) -> Expr:
+        if (self.match(TokenType.BANG, TokenType.MINUS)):
+            operator = self.previous()
+            right = self.unary()
+            return Unary(operator, right)
+        
+        return self.primary()
+    
+    def primary(self) -> Expr:        
+        if self.match(TokenType.FALSE):
+            return Literal(False)
+        if self.match(TokenType.TRUE):
+            return Literal(True)
+        if self.match(TokenType.NIL):
+            return Literal(None)
+        
+        if self.match(TokenType.NUMBER, TokenType.STRING):
+            return Literal(self.previous().literal)
+        
+        if (self.match(TokenType.LEFT_PAREN)):
+            expr = self.expression();
+            self.consume(TokenType.RIGHT_PAREN, "Expect ')' after expression")
+            return Grouping(expr)
+        
+        raise self.error(self.peek(), "Expect expression")
+        
+
+    # helpers
+    def error(self, token, message) -> ParseError:
+        parse_error(token, message)
+        err = ParseError()
+        return err
+
+    def consume(self, token, error_message):
+        if (self.check(token)):
+            return self.advance()
+        
+        raise self.error(self.peek(), error_message)
+
+    def match(self, *tokens) -> bool:
+        for token in tokens:
+            if (self.check(token)):
+                self.advance()
+                return True
+
+        return False
+    
+    def check(self, token) -> bool:
+        if (self.is_at_end()):
+            return False
+        
+        return self.peek().token_type == token
+    
+    def advance(self):
+        if (not self.is_at_end()):
+            self.current += 1
+            return self.previous()
+        
+    def is_at_end(self):
+        return self.peek() == TokenType.EOF
+    
+    def peek(self):
+        return self.tokens[self.current]
+    
+    def previous(self):
+        return self.tokens[self.current - 1]
+    
+    def synchronize(self):
+        self.advance()
+
+        while (not self.is_at_end()):
+            if (self.previous() == TokenType.SEMICOLON):
+                return
+            
+            match (self.peek()):
+                case (
+                    TokenType.CLASS 
+                    | TokenType.FUN
+                    | TokenType.VAR
+                    | TokenType.FOR
+                    | TokenType.IF
+                    | TokenType.WHILE
+                    | TokenType.PRINT
+                    | TokenType.RETURN
+                ): 
+                    return
+            self.advance()
+
+

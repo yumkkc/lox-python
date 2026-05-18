@@ -1,6 +1,8 @@
 import sys
 from scanner import Scanner
 from error import *
+from parser import Parser
+import ast_printer
 
 hadError: bool = False
 
@@ -21,9 +23,11 @@ class Lox:
     def run(self, content):
         lexer = Scanner(content)
         lexer.scan_tokens()
-        
-        for token in lexer.tokens:
-            print(token)
+        parser = Parser(lexer.tokens)
+        expr = parser.parse()
+        print(ast_printer.ast_print(expr))
+        if (hadError):
+            return
 
     def main(self, args: list):
         if len(args) <= 1:

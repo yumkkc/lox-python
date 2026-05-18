@@ -9,7 +9,7 @@ def ast_print(expr: Expr) -> str:
             return f"({operator.lexeme} {ast_print(left)} {ast_print(right)})"
 
         case Grouping(expression):
-            return f"(group {ast_print(expression)})"
+            return f"( {ast_print(expression)} )"
 
         case Literal(value):
             return str(value)
