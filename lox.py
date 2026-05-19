@@ -3,8 +3,8 @@ from scanner import Scanner
 from error import *
 from parser import Parser
 import ast_printer
+from interpreter import ast_interpret
 
-hadError: bool = False
 
 class Lox:
     def run_prompt(self):
@@ -17,17 +17,22 @@ class Lox:
     def run_file(self, file_name: str):
         with open(file_name, "r") as f:
             content = f.read()
-            if (hadError):
+            self.run(content)
+            if (had_error):
                 sys.exit(65)
+            if(had_run_time):
+                sys.exit(70)
 
     def run(self, content):
         lexer = Scanner(content)
         lexer.scan_tokens()
         parser = Parser(lexer.tokens)
         expr = parser.parse()
-        print(ast_printer.ast_print(expr))
-        if (hadError):
+        print(expr)
+        interpret_value = ast_interpret(expr)
+        if (had_error):
             return
+        print(interpret_value)
 
     def main(self, args: list):
         if len(args) <= 1:
