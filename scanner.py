@@ -14,12 +14,12 @@ keywords = {
     "if": TokenType.IF,
     "nil": TokenType.NIL,
     "or": TokenType.OR,
-    "print": TokenType.PRINT,
+    "SayBebba": TokenType.PRINT,
     "return": TokenType.RETURN,
     "super": TokenType.SUPER,
     "this": TokenType.THIS,
     "true": TokenType.TRUE,
-    "var": TokenType.VAR,
+    "SeeBebba": TokenType.VAR,
     "while": TokenType.WHILE,
 }
 
@@ -37,7 +37,7 @@ class Scanner():
             self.start = self.current
             self.scan_token()
         
-        self.tokens.append(TokenType.EOF)
+        self.add_token(TokenType.EOF, "EOF")
             
     def scan_token(self):
         word = self.advance()

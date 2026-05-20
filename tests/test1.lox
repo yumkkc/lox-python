@@ -1,2 +1,4 @@
-1 + 1
-"hello" + " world"
+SayBebba "My love Sarina";
+SayBebba "My pretty cutest baby";
+SayBebba "All my Maya to you";
+SayBebba "I Love You my babeeeee\n" * 10;

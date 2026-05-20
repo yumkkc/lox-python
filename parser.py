@@ -1,4 +1,4 @@
-from lox_ast import Expr, Binary, Unary, Literal, Grouping
+from lox_ast import Expr, Binary, Unary, Literal, Grouping, Print
 from token_type import TokenType
 from lex_token import Token
 from error import ParseError, parse_error
@@ -10,9 +10,37 @@ class Parser():
 
     def parse(self):
         try:
-            return self.expression()
+            statements = []
+            while (not self.is_at_end()):
+                statements.append(self.declarations())
+            return statements
         except Exception as e:
-            return None
+            return []
+        
+    def declarations(self):
+        if (self.match(TokenType.VAR)):
+            return self.var_declarations()
+
+        return self.statement()
+    
+    def var_declarations(self):
+        
+        
+    def statement(self):
+        if (self.match(TokenType.PRINT)):
+            return self.print_statement()
+
+        return self.expression_statement()
+
+    def print_statement(self):
+        expr = self.expression()
+        self.consume(TokenType.SEMICOLON, "Expect ';' after print")
+        return Print(expr)
+
+    def expression_statement(self):
+        expr = self.expression()
+        self.consume(TokenType.SEMICOLON, "Expect ';' after expression")
+        return self.expression_statement(expr)
 
     def expression(self):
         return self.equality()
@@ -116,7 +144,7 @@ class Parser():
             return self.previous()
         
     def is_at_end(self):
-        return self.peek() == TokenType.EOF
+        return self.peek().token_type == TokenType.EOF
     
     def peek(self):
         return self.tokens[self.current]
@@ -131,7 +159,7 @@ class Parser():
             if (self.previous() == TokenType.SEMICOLON):
                 return
             
-            match (self.peek()):
+            match (self.peek().token_type):
                 case (
                     TokenType.CLASS 
                     | TokenType.FUN

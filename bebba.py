@@ -16,7 +16,7 @@ class Lox:
 
     def run_file(self, file_name: str):
         with open(file_name, "r") as f:
-            content = f.read()
+            content = f.read()            
             self.run(content)
             if (had_error):
                 sys.exit(65)
@@ -27,12 +27,11 @@ class Lox:
         lexer = Scanner(content)
         lexer.scan_tokens()
         parser = Parser(lexer.tokens)
-        expr = parser.parse()
-        print(expr)
-        interpret_value = ast_interpret(expr)
-        if (had_error):
+        stmts = parser.parse()
+        if (had_error or had_run_time):
             return
-        print(interpret_value)
+        ast_interpret(stmts)
+
 
     def main(self, args: list):
         if len(args) <= 1:

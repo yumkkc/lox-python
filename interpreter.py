@@ -1,11 +1,12 @@
-from typing import Any
+from typing import Any, List, Union
 
 from error import LoxRuntimeError, run_time_error
-from lox_ast import Expr, Binary, Grouping, Literal, Unary
+from lox_ast import Expr, Binary, Grouping, Literal, Unary, Expression, Print, Stmt
 from lex_token import Token
 from token_type import TokenType
+from utils import stringify
 
-def interpret(tree: Expr):
+def interpret(tree: Union[Expr, Stmt]):
     match tree:
         case Literal(value):
             return value    
@@ -43,8 +44,11 @@ def interpret(tree: Expr):
                     checkNumberOperand(op, left, right)
                     return float(left)/ float(right)
                 case TokenType.STAR:
-                    checkNumberOperand(op, left, right)
-                    return float(left) * float(right)
+                    if isinstance(left, float) and isinstance(right, float):
+                        return float(left) * float(right)
+                    if isinstance(left, str) and isinstance (right, float):
+                        return str(left) * int(right)
+                    raise LoxRuntimeError(op, "Operands must be two number or a string * number")
                 case TokenType.PLUS:
                     if isinstance(left, float) and isinstance(right, float):
                         return float(left) + float(right)
@@ -55,8 +59,14 @@ def interpret(tree: Expr):
                     return not (left == right)
                 case TokenType.EQUAL_EQUAL:
                     return (left == right)
-                
+        case Expression (expr):
+            interpret(expr)
             return None
+        case Print (expr):
+            expr_value = interpret(expr)
+            print(stringify(expr_value))
+            return None
+
         
 def is_truthy(value) -> bool:
     if value == None:
@@ -72,15 +82,14 @@ def checkNumberOperandUnary(op: Token, operand: Any):
 
 
 def checkNumberOperand(op: Token, left: Any, right: Any):
-    print(left)
-    print(right)
     if (isinstance(left, float)) and (isinstance(right, float)):
         return 
     raise LoxRuntimeError(op, "Operand must be a number")
         
 
-def ast_interpret(expr: Expr):
+def ast_interpret(stmts: List[Stmt]):
     try:
-        return interpret(expr)
+        for statement in stmts:
+            interpret(statement)
     except LoxRuntimeError as e:
         run_time_error(e)

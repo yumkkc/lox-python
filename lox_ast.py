@@ -23,3 +23,25 @@ class Literal (Expr):
 class Unary(Expr):
     operator: Token
     right: Expr
+
+# statements
+class Stmt:
+    pass
+
+@dataclass
+class Expression(Stmt):
+    expression: Expr
+
+@dataclass
+class Print(Stmt):
+    expression: Expr
+
+
+@dataclass
+class VarDecl():
+    name: Token
+    initializer: Expr
+
+@dataclass    
+class Variable ():
+    name: Token
