@@ -1,4 +1,4 @@
-from lox_ast import Expr, Binary, Unary, Literal, Grouping, Print
+from lox_ast import Expr, Binary, Unary, Literal, Grouping, Print, VarDecl, Variable
 from token_type import TokenType
 from lex_token import Token
 from error import ParseError, parse_error
@@ -24,6 +24,13 @@ class Parser():
         return self.statement()
     
     def var_declarations(self):
+        self.consume(TokenType.IDENTIFIER, "Expected Identifier after var")    
+        iden = self.previous()
+        initilizer = None
+        if (self.match(TokenType.EQUAL)):
+            initilizer = self.expression()
+        self.consume(TokenType.SEMICOLON, "Expected ; after var declarations")
+        return VarDecl(iden, initilizer)
         
         
     def statement(self):
@@ -88,18 +95,21 @@ class Parser():
     def unary(self) -> Expr:
         if (self.match(TokenType.BANG, TokenType.MINUS)):
             operator = self.previous()
-            right = self.unary()
+            right = self.unary()    
             return Unary(operator, right)
         
         return self.primary()
     
-    def primary(self) -> Expr:        
+    def primary(self):        
         if self.match(TokenType.FALSE):
             return Literal(False)
         if self.match(TokenType.TRUE):
             return Literal(True)
         if self.match(TokenType.NIL):
             return Literal(None)
+
+        if self.match(TokenType.IDENTIFIER):
+            return Variable (self.previous())
         
         if self.match(TokenType.NUMBER, TokenType.STRING):
             return Literal(self.previous().literal)

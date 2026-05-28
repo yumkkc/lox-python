@@ -1,10 +1,13 @@
 from typing import Any, List, Union
 
 from error import LoxRuntimeError, run_time_error
-from lox_ast import Expr, Binary, Grouping, Literal, Unary, Expression, Print, Stmt
+from lox_ast import Expr, Binary, Grouping, Literal, Unary, Expression, Print, Stmt, VarDecl, Variable
 from lex_token import Token
 from token_type import TokenType
 from utils import stringify
+from environment import Environment
+
+env = Environment()
 
 def interpret(tree: Union[Expr, Stmt]):
     match tree:
@@ -21,6 +24,8 @@ def interpret(tree: Union[Expr, Stmt]):
                 case TokenType.BANG:
                     return not is_truthy(right)
             return None
+        case Variable (iden):
+            return env.retrive(iden)
         case Binary(left, op, right):
             left = interpret(left)
             right = interpret(right)
@@ -65,6 +70,13 @@ def interpret(tree: Union[Expr, Stmt]):
         case Print (expr):
             expr_value = interpret(expr)
             print(stringify(expr_value))
+            return None
+        
+        case VarDecl(iden, initializer):
+            if initializer is not None:
+                initializer = interpret(initializer)
+            
+            env.define(iden, initializer)
             return None
 
         
