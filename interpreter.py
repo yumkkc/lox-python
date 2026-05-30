@@ -1,7 +1,7 @@
 from typing import Any, List, Union
 
 from error import LoxRuntimeError, run_time_error
-from lox_ast import Expr, Binary, Grouping, Literal, Unary, Expression, Print, Stmt, VarDecl, Variable
+from lox_ast import Expr, Binary, Grouping, Literal, Unary, Expression, Print, Stmt, VarDecl, Variable, Assignment
 from lex_token import Token
 from token_type import TokenType
 from utils import stringify
@@ -78,6 +78,11 @@ def interpret(tree: Union[Expr, Stmt]):
             
             env.define(iden, initializer)
             return None
+        
+        case Assignment (name, value):
+            value = interpret(value)
+            env.assign(name, value)
+            return value
 
         
 def is_truthy(value) -> bool:

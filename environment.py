@@ -14,4 +14,11 @@ class Environment:
             raise LoxRuntimeError (key, f"{key.lexeme} not defined")
         
         return self.values[key.lexeme]
+    
+    def assign (self, name, value):
+        if name.lexeme in self.values:
+            self.values.put(name.lexeme, value)
+            return 
+        
+        raise LoxRuntimeError(name, f"Undefined varibale '{name.lexeme}'.")
         

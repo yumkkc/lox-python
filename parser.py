@@ -1,4 +1,4 @@
-from lox_ast import Expr, Binary, Unary, Literal, Grouping, Print, VarDecl, Variable
+from lox_ast import Expr, Binary, Unary, Literal, Grouping, Print, VarDecl, Variable, Assignment
 from token_type import TokenType
 from lex_token import Token
 from error import ParseError, parse_error
@@ -19,29 +19,29 @@ class Parser():
         
     def declarations(self):
         if (self.match(TokenType.VAR)):
-            return self.var_declarations()
+            return self.var_declarations(self.previous())
 
         return self.statement()
     
-    def var_declarations(self):
-        self.consume(TokenType.IDENTIFIER, "Expected Identifier after var")    
+    def var_declarations(self, var_token):
+        self.consume(TokenType.IDENTIFIER, f"Expected Identifier after {var_token.lexeme}")    
         iden = self.previous()
         initilizer = None
         if (self.match(TokenType.EQUAL)):
             initilizer = self.expression()
-        self.consume(TokenType.SEMICOLON, "Expected ; after var declarations")
+        self.consume(TokenType.SEMICOLON, f"Expected ; after {var_token.lexeme}")
         return VarDecl(iden, initilizer)
         
         
     def statement(self):
         if (self.match(TokenType.PRINT)):
-            return self.print_statement()
+            return self.print_statement(self.previous())
 
         return self.expression_statement()
 
-    def print_statement(self):
-        expr = self.expression()
-        self.consume(TokenType.SEMICOLON, "Expect ';' after print")
+    def print_statement(self, print_token: Token):
+        expr = self.expression()        
+        self.consume(TokenType.SEMICOLON, f"Expect ';' after {print_token.lexeme}")
         return Print(expr)
 
     def expression_statement(self):
@@ -50,7 +50,23 @@ class Parser():
         return self.expression_statement(expr)
 
     def expression(self):
-        return self.equality()
+        return self.assignment()
+    
+    # a = b = 3
+    def assignment(self):
+        expr = self.equality()
+
+        if self.match(TokenType.EQUAL):
+            equals = self.previous()
+            value = self.assignment()
+
+            if isinstance(expr, Variable):
+                name = expr.name
+                return Assignment(name, value)
+            
+            self.error(equals, "Invalid assignment target.")
+        return expr
+
 
     def equality(self) -> Expr:
         expr: Expr = self.comparision()

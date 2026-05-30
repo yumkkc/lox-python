@@ -45,3 +45,8 @@ class VarDecl():
 @dataclass    
 class Variable ():
     name: Token
+
+@dataclass
+class Assignment ():
+    name: Token
+    value: Expr

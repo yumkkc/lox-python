@@ -21,6 +21,9 @@ keywords = {
     "true": TokenType.TRUE,
     "SeeBebba": TokenType.VAR,
     "while": TokenType.WHILE,
+    "chai" : TokenType.EQUAL,
+    "print": TokenType.PRINT,
+    "var": TokenType.VAR
 }
 
 class Scanner():
