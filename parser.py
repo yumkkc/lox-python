@@ -1,4 +1,4 @@
-from lox_ast import Expr, Binary, Unary, Literal, Grouping, Print, VarDecl, Variable, Assignment
+from lox_ast import Expr, Binary, Unary, Literal, Grouping, Print, VarDecl, Variable, Assignment, Expression
 from token_type import TokenType
 from lex_token import Token
 from error import ParseError, parse_error
@@ -47,7 +47,7 @@ class Parser():
     def expression_statement(self):
         expr = self.expression()
         self.consume(TokenType.SEMICOLON, "Expect ';' after expression")
-        return self.expression_statement(expr)
+        return Expression(expr)
 
     def expression(self):
         return self.assignment()

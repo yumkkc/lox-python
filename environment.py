@@ -17,7 +17,7 @@ class Environment:
     
     def assign (self, name, value):
         if name.lexeme in self.values:
-            self.values.put(name.lexeme, value)
+            self.values[name.lexeme] = value
             return 
         
         raise LoxRuntimeError(name, f"Undefined varibale '{name.lexeme}'.")
