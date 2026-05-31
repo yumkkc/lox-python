@@ -26,7 +26,7 @@ class Lox:
     def run(self, content):
         lexer = Scanner(content)
         lexer.scan_tokens()
-        parser = Parser(lexer.tokens)
+        parser = Parser(lexer.tokens)edt 
         stmts = parser.parse()
         if (had_error or had_run_time):
             return

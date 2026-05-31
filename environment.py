@@ -3,14 +3,19 @@ from error import LoxRuntimeError
 from typing import Any
 
 class Environment:
-    def __init__(self):
+    def __init__(self, enclosing = None):
         self.values = {}
+        self.enclosing = enclosing
 
     def define(self, key: Token, val: Any):
         self.values[key.lexeme] = val
 
     def retrive(self, key: Token) -> Any:
         if key.lexeme not in self.values:
+            # if not in this environment, see in above
+            if self.enclosing != None:
+                return self.enclosing.retrive(key)
+            
             raise LoxRuntimeError (key, f"{key.lexeme} not defined")
         
         return self.values[key.lexeme]
@@ -21,4 +26,3 @@ class Environment:
             return 
         
         raise LoxRuntimeError(name, f"Undefined varibale '{name.lexeme}'.")
-        

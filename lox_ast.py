@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, List
 from lex_token import Token
 
 class Expr:
@@ -50,3 +50,7 @@ class Variable ():
 class Assignment ():
     name: Token
     value: Expr
+
+@dataclass    
+class Block ():
+    statements : List[Stmt]

@@ -1,4 +1,4 @@
-from lox_ast import Expr, Binary, Unary, Literal, Grouping, Print, VarDecl, Variable, Assignment, Expression
+from lox_ast import Expr, Binary, Unary, Literal, Grouping, Print, VarDecl, Variable, Assignment, Expression, Block
 from token_type import TokenType
 from lex_token import Token
 from error import ParseError, parse_error
@@ -36,6 +36,9 @@ class Parser():
     def statement(self):
         if (self.match(TokenType.PRINT)):
             return self.print_statement(self.previous())
+        
+        if (self.match(TokenType.LEFT_BRACE)):
+            return self.block_statement()
 
         return self.expression_statement()
 
@@ -43,6 +46,14 @@ class Parser():
         expr = self.expression()        
         self.consume(TokenType.SEMICOLON, f"Expect ';' after {print_token.lexeme}")
         return Print(expr)
+
+    def block_statement(self):
+        block_stmts = []
+        while (not self.check(TokenType.RIGHT_BRACE) and not self.is_at_end()):
+            block_stmts.append(self.declarations())
+
+        self.consume(TokenType.RIGHT_BRACE, "Expect '}' after block.")
+        return Block(block_stmts)
 
     def expression_statement(self):
         expr = self.expression()
