@@ -1,4 +1,4 @@
-from lox_ast import Expr, Binary, Unary, Literal, Grouping, Print, VarDecl, Variable, Assignment, Expression, Block
+from lox_ast import Expr, Binary, Unary, Literal, Grouping, Print, VarDecl, Variable, Assignment, Expression, Block, If
 from token_type import TokenType
 from lex_token import Token
 from error import ParseError, parse_error
@@ -39,6 +39,9 @@ class Parser():
         
         if (self.match(TokenType.LEFT_BRACE)):
             return self.block_statement()
+        
+        if (self.match(TokenType.IF)):
+            return self.if_statement()
 
         return self.expression_statement()
 
@@ -54,6 +57,18 @@ class Parser():
 
         self.consume(TokenType.RIGHT_BRACE, "Expect '}' after block.")
         return Block(block_stmts)
+    
+    def if_statement(self):
+        self.consume(TokenType.LEFT_PAREN, "expected '(' after if statement")
+        expr = self.expression()
+        self.consume(TokenType.RIGHT_PAREN, "expected ')' after if expression")
+        true_stmt = self.statement()
+        false_stmt = None
+        if (self.match(TokenType.ELSE)):
+            false_stmt = self.statement()
+        
+        return If(expr, true_stmt, false_stmt)
+    
 
     def expression_statement(self):
         expr = self.expression()

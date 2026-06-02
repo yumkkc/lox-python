@@ -54,3 +54,9 @@ class Assignment ():
 @dataclass    
 class Block ():
     statements : List[Stmt]
+
+@dataclass
+class If (Stmt):
+    condition: Expr
+    thenBranch: Stmt
+    elseBranch: Stmt

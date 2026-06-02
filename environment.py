@@ -25,4 +25,7 @@ class Environment:
             self.values[name.lexeme] = value
             return 
         
+        if self.enclosing != None:
+            return self.enclosing.assign(name, value)
+        
         raise LoxRuntimeError(name, f"Undefined varibale '{name.lexeme}'.")

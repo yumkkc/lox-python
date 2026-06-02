@@ -1,0 +1,11 @@
+var a = 10;
+var b = 20;
+if (a == b) {
+    print ("A is equal to B");
+} else {
+    b = 10;
+    print ("B is not equal to A");
+    print(a);
+    print(b);
+}
+

@@ -2,7 +2,7 @@ from typing import Any, List
 from error import LoxRuntimeError, run_time_error
 from lox_ast import (Expr, Binary, Grouping, Literal, Unary,
                      Expression, Print, Stmt, VarDecl, Variable,
-                     Assignment, Block)
+                     Assignment, Block, If)
 from lex_token import Token
 from token_type import TokenType
 from utils import stringify
@@ -89,6 +89,9 @@ class Interpreter:
             case Block(stmts):
                 self._execute_block(stmts, Environment(enclosing=self.env))  # fixed: new scope
                 return None
+            
+            case If (condition, then_block, else_block):
+                self._execute_if(condition, then_block, else_block)
 
             case VarDecl(iden, initializer):
                 value = self.interpret(initializer) if initializer is not None else None
@@ -121,6 +124,15 @@ class Interpreter:
         if isinstance(left, float) and isinstance(right, float):
             return
         raise LoxRuntimeError(op, "Operands must be numbers")
+    
+    def _execute_if(self, condition, if_block, then_block):
+        condition_value = self.interpret(condition)
+        if (self._is_truthy(condition_value)):
+            self.interpret(if_block)
+        elif then_block is not None:
+            self.interpret(then_block)
+        
+        return None
 
 
 def ast_interpret(stmts: List[Stmt]):
