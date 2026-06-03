@@ -2,7 +2,7 @@ from typing import Any, List
 from error import LoxRuntimeError, run_time_error
 from lox_ast import (Expr, Binary, Grouping, Literal, Unary,
                      Expression, Print, Stmt, VarDecl, Variable,
-                     Assignment, Block, If)
+                     Assignment, Block, If, Logical, While)
 from lex_token import Token
 from token_type import TokenType
 from utils import stringify
@@ -81,6 +81,17 @@ class Interpreter:
             case Expression(expr):
                 self.interpret(expr)
                 return None
+            
+            case Logical(left, op, right):
+                left_value = self.interpret(left)
+                left_value_truth = self._is_truthy(left_value)
+                if op.token_type == TokenType.OR:
+                   if left_value_truth:
+                       return left_value
+                else:
+                    if not left_value_truth:
+                        return left_value
+                return self.interpret(right)
 
             case Print(expr):
                 print(stringify(self.interpret(expr)))
@@ -92,6 +103,11 @@ class Interpreter:
             
             case If (condition, then_block, else_block):
                 self._execute_if(condition, then_block, else_block)
+
+            case While(condition, body):
+                while (self._is_truthy(self.interpret(condition))):
+                    self.interpret(body)
+                return None
 
             case VarDecl(iden, initializer):
                 value = self.interpret(initializer) if initializer is not None else None

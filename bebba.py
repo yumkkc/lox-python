@@ -11,6 +11,8 @@ class Lox:
         while True:
             print("> ", end="")
             code = input()
+            if code == "exit()":
+                sys.exit(0)
             self.run(code)
             hadError = False
 
@@ -30,6 +32,7 @@ class Lox:
         stmts = parser.parse()
         if (had_error or had_run_time):
             return
+#        print(stmts)
         ast_interpret(stmts)
 
 

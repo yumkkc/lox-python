@@ -1,0 +1,10 @@
+var a = 10;
+var b = 11;
+var c = 13;
+var d = 10;
+
+if ((a == d) and (a==d)){
+    print("its true");
+} else {
+    print("its false");
+}

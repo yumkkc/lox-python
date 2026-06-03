@@ -46,6 +46,7 @@ class VarDecl():
 class Variable ():
     name: Token
 
+
 @dataclass
 class Assignment ():
     name: Token
@@ -60,3 +61,15 @@ class If (Stmt):
     condition: Expr
     thenBranch: Stmt
     elseBranch: Stmt
+
+@dataclass    
+class Logical (Expr):
+    left : Expr
+    operator: Token
+    right: Expr
+
+
+@dataclass
+class While (Stmt):
+    condition: Expr
+    body: Stmt
