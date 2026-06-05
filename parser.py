@@ -312,7 +312,7 @@ class Parser():
         if not self.match(TokenType.RIGHT_PAREN):
             arguments = self.consume_arguments(arguments)
             self.consume(TokenType.RIGHT_PAREN, "unclosed ')' in function call")
-        return Caller(callee, arguments)
+        return Caller(callee, arguments, self.previous())
 
             
 

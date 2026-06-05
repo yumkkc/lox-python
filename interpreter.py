@@ -1,17 +1,23 @@
 from typing import Any, List
+import lox_callable
 from error import LoxRuntimeError, run_time_error
 from lox_ast import (Expr, Binary, Grouping, Literal, Unary,
                      Expression, Print, Stmt, VarDecl, Variable,
-                     Assignment, Block, If, Logical, While)
+                     Assignment, Block, If, Logical, While, Caller)
 from lex_token import Token
 from token_type import TokenType
 from utils import stringify
 from environment import Environment
+import primitive_functions as pf
 
 
 class Interpreter:
     def __init__(self):
-        self.env = Environment()
+        _global_env = Environment()
+        self.env = _global_env
+
+        # primitives    
+        self.env.define("clock", pf.Clock())
 
     def interpret(self, tree):
         match tree:
@@ -111,8 +117,23 @@ class Interpreter:
 
             case VarDecl(iden, initializer):
                 value = self.interpret(initializer) if initializer is not None else None
-                self.env.define(iden, value)
+                self.env.define(iden.lexeme, value)
                 return None
+
+            case Caller(callee, arguments, paren):
+                callee = self.interpret(callee)
+                argument_list = []
+                for argument in arguments:
+                    argument_list.append(self.interpret(argument))
+
+                if not isinstance(callee, lox_callable.LoxCallable):
+                    raise LoxRuntimeError(paren,  "Not callable expression")
+                
+                if(callee.arity() != len(arguments)):
+                    raise LoxRuntimeError(paren, "Arguments doesn't match for function")
+                
+                return callee.call(self, argument_list)
+
 
     def _execute_block(self, stmts: List[Stmt], env: Environment):
         """Run a block inside a given environment, restoring the previous one after."""

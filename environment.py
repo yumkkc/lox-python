@@ -7,8 +7,8 @@ class Environment:
         self.values = {}
         self.enclosing = enclosing
 
-    def define(self, key: Token, val: Any):
-        self.values[key.lexeme] = val
+    def define(self, key: str, val: Any):
+        self.values[key] = val
 
     def retrive(self, key: Token) -> Any:
         if key.lexeme not in self.values:
