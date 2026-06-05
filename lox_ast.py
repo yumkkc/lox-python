@@ -24,8 +24,13 @@ class Unary(Expr):
     operator: Token
     right: Expr
 
+@dataclass
+class Declaration:
+    pass
+
 # statements
-class Stmt:
+@dataclass
+class Stmt(Declaration):
     pass
 
 @dataclass
@@ -37,8 +42,9 @@ class Print(Stmt):
     expression: Expr
 
 
+
 @dataclass
-class VarDecl():
+class VarDecl(Declaration):
     name: Token
     initializer: Expr
 
@@ -79,3 +85,10 @@ class Caller (Expr):
     callee: Expr
     args: List[Expr]
     paren: Token
+
+
+@dataclass
+class Function(Stmt):
+    name: Token
+    body: Declaration
+    params: list

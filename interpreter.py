@@ -1,7 +1,8 @@
+import random
 from typing import Any, List
 import lox_callable
 from error import LoxRuntimeError, run_time_error
-from lox_ast import (Expr, Binary, Grouping, Literal, Unary,
+from lox_ast import (Expr, Binary, Function, Grouping, Literal, Unary,
                      Expression, Print, Stmt, VarDecl, Variable,
                      Assignment, Block, If, Logical, While, Caller)
 from lex_token import Token
@@ -12,12 +13,10 @@ import primitive_functions as pf
 
 
 class Interpreter:
-    def __init__(self):
-        _global_env = Environment()
-        self.env = _global_env
-
-        # primitives    
-        self.env.define("clock", pf.Clock())
+    _global_env = Environment()
+    env = _global_env
+    _function_counter = 0
+    env.define("clock", pf.Clock)
 
     def interpret(self, tree):
         match tree:
@@ -121,7 +120,7 @@ class Interpreter:
                 return None
 
             case Caller(callee, arguments, paren):
-                callee = self.interpret(callee)
+                callee = self.interpret(callee)()
                 argument_list = []
                 for argument in arguments:
                     argument_list.append(self.interpret(argument))
@@ -133,6 +132,11 @@ class Interpreter:
                     raise LoxRuntimeError(paren, "Arguments doesn't match for function")
                 
                 return callee.call(self, argument_list)
+            
+            case Function(name, body, params):
+                self._define_function(name, body, params)
+                return None
+
 
 
     def _execute_block(self, stmts: List[Stmt], env: Environment):
@@ -170,6 +174,23 @@ class Interpreter:
             self.interpret(then_block)
         
         return None
+    
+    def _define_function(self, name, body, params):
+        class_name = name.lexeme + str(self._function_counter)
+        self._function_counter += 1
+        class class_name(lox_callable.LoxCallable):
+            def call(self, interpreter: Interpreter, arguments):
+                #set arguments to formal params
+                original_env = interpreter.env
+                interpreter.env = Environment(original_env)
+                for i, arg in enumerate(arguments):
+                    interpreter.env.define(params[i].lexeme, arg)
+                interpreter.interpret(body)
+                interpreter.env = original_env
+            def arity(self):
+                return len(params)
+        self.env.define(name.lexeme, class_name)
+
 
 
 def ast_interpret(stmts: List[Stmt]):
@@ -177,5 +198,6 @@ def ast_interpret(stmts: List[Stmt]):
     try:
         for stmt in stmts:
             interpreter.interpret(stmt)
+        return interpreter.env
     except LoxRuntimeError as e:
         run_time_error(e)

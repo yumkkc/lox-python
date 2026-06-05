@@ -1,4 +1,4 @@
-from lox_ast import Expr, Binary, Unary, Literal, Grouping, Print, VarDecl, Variable, Assignment, Expression, Block, If, Logical, While, Caller
+from lox_ast import Expr, Binary, Unary, Literal, Grouping, Print, VarDecl, Variable, Assignment, Expression, Block, If, Logical, While, Caller, Function
 from token_type import TokenType
 from lex_token import Token
 from error import ParseError, parse_error
@@ -48,6 +48,9 @@ class Parser():
         
         if (self.match(TokenType.FOR)):
             return self.for_statement()
+        
+        if (self.match(TokenType.FUN)):
+            return self.fun_statement()
 
         return self.expression_statement()
 
@@ -74,6 +77,22 @@ class Parser():
             false_stmt = self.statement()
         
         return If(expr, true_stmt, false_stmt)
+    
+    def fun_statement(self):
+        if not self.match(TokenType.IDENTIFIER):
+            self.error(self.previous(), "Expected identifier after fun declaration")
+        
+        fun_name = self.previous()
+        if not self.match(TokenType.LEFT_PAREN):
+            self.error(self.previous(), "Expected '(' after fun declaration")
+        formal_params = []
+        if self.peek() != TokenType.RIGHT_PAREN:
+            formal_params = self._consume_formal_params([])
+        
+        self.consume(TokenType.RIGHT_PAREN, "Expected ')' after declaration")
+        self.consume(TokenType.LEFT_BRACE, "Expected '{' before function body")
+        body = self.block_statement()
+        return Function(fun_name, body, formal_params)
     
     def while_statement(self):
         self.consume(TokenType.LEFT_PAREN, "expected '(' after while statement")
@@ -313,7 +332,12 @@ class Parser():
             arguments = self.consume_arguments(arguments)
             self.consume(TokenType.RIGHT_PAREN, "unclosed ')' in function call")
         return Caller(callee, arguments, self.previous())
-
             
-
-
+    def _consume_formal_params(self, params):
+        if not self.match(TokenType.IDENTIFIER):
+            self.error(self.previous(), "Expected Identifier")
+        
+        params.append(self.previous())
+        if self.match(TokenType.COMMA):
+            self._consume_formal_params(params)
+        return params
