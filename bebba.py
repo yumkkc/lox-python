@@ -32,8 +32,8 @@ class Lox:
         stmts = parser.parse()
         if (had_error or had_run_time):
             return
-#        print(stmts)
-        ast_interpret(stmts)
+        print(stmts)
+#        ast_interpret(stmts)
 
 
     def main(self, args: list):

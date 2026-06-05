@@ -1,4 +1,4 @@
-from lox_ast import Expr, Binary, Unary, Literal, Grouping, Print, VarDecl, Variable, Assignment, Expression, Block, If, Logical, While
+from lox_ast import Expr, Binary, Unary, Literal, Grouping, Print, VarDecl, Variable, Assignment, Expression, Block, If, Logical, While, Caller
 from token_type import TokenType
 from lex_token import Token
 from error import ParseError, parse_error
@@ -203,7 +203,16 @@ class Parser():
             right = self.unary()    
             return Unary(operator, right)
         
-        return self.primary()
+        return self.caller()
+    
+    def caller(self):
+        expr = self.primary()
+        while True:
+            if (self.match(TokenType.LEFT_PAREN)):
+                expr = self.consume_function(expr)
+            else:
+                break
+        return expr
     
     def primary(self):        
         if self.match(TokenType.FALSE):
@@ -287,5 +296,24 @@ class Parser():
                 ): 
                     return
             self.advance()
+
+
+    def consume_arguments(self, args: list):
+        expr = self.expression()
+        args.append(expr)
+        if len(args) > 255:
+            self.error(self.peek(), "Too many arguments. Cannot have more than 255")
+        if (self.match(TokenType.COMMA)):
+            return self.consume_arguments(args)
+        return args
+
+    def consume_function(self, callee):
+        arguments = []
+        if not self.match(TokenType.RIGHT_PAREN):
+            arguments = self.consume_arguments(arguments)
+            self.consume(TokenType.RIGHT_PAREN, "unclosed ')' in function call")
+        return Caller(callee, arguments)
+
+            
 
 

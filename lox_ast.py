@@ -73,3 +73,8 @@ class Logical (Expr):
 class While (Stmt):
     condition: Expr
     body: Stmt
+
+@dataclass    
+class Caller (Expr):
+    callee: Expr
+    args: List[Expr]
