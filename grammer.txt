@@ -9,6 +9,7 @@ statement      -> exprStmt
                 | whileStatement
                 | forStatement
                 | functionStatement
+                | returnStatement
 
 functionStatement  -> "fun" IDENTIFIER "(" IDENTIFIER? (,IDENTIFIER)* ")" block ;                
 block          -> "{" declaration* "}"
@@ -20,6 +21,7 @@ whileStatement  -> "while" "(" expression ")" statement ;
 forStatement    -> "for" "(" (varDecl | exprStmt | ";")
                     expression? ";"
                     expression? ")" statement ;
+returnStatement ->  "return" exprStmt ;                   
 expression     → assignment ;
 assignment     -> IDENTIFIER "=" assignment
                 | logic_or

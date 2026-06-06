@@ -4,7 +4,7 @@ import lox_callable
 from error import LoxRuntimeError, run_time_error
 from lox_ast import (Expr, Binary, Function, Grouping, Literal, Unary,
                      Expression, Print, Stmt, VarDecl, Variable,
-                     Assignment, Block, If, Logical, While, Caller)
+                     Assignment, Block, If, Logical, While, Caller, Return)
 from lex_token import Token
 from token_type import TokenType
 from utils import stringify
@@ -17,6 +17,7 @@ class Interpreter:
     env = _global_env
     _function_counter = 0
     env.define("clock", pf.Clock)
+    in_function = False
 
     def interpret(self, tree):
         match tree:
@@ -103,8 +104,7 @@ class Interpreter:
                 return None
 
             case Block(stmts):
-                self._execute_block(stmts, Environment(enclosing=self.env))  # fixed: new scope
-                return None
+                return self._execute_block(stmts, Environment(enclosing=self.env))  # fixed: new scope
             
             case If (condition, then_block, else_block):
                 self._execute_if(condition, then_block, else_block)
@@ -132,22 +132,26 @@ class Interpreter:
                     raise LoxRuntimeError(paren, "Arguments doesn't match for function")
                 
                 return callee.call(self, argument_list)
-            
+
             case Function(name, body, params):
                 self._define_function(name, body, params)
                 return None
 
-
+            case Return (expr):
+                return_value = self.interpret(expr)
+                return return_value
 
     def _execute_block(self, stmts: List[Stmt], env: Environment):
         """Run a block inside a given environment, restoring the previous one after."""
         previous = self.env
+        final_val = None
         try:
             self.env = env
             for stmt in stmts:
-                self.interpret(stmt)
+                final_val = self.interpret(stmt)
         finally:
             self.env = previous 
+            return final_val
 
     def _is_truthy(self, value) -> bool:
         if value is None:
@@ -183,10 +187,13 @@ class Interpreter:
                 #set arguments to formal params
                 original_env = interpreter.env
                 interpreter.env = Environment(original_env)
+                interpreter.in_function = True
                 for i, arg in enumerate(arguments):
                     interpreter.env.define(params[i].lexeme, arg)
-                interpreter.interpret(body)
+                return_val = interpreter.interpret(body)
                 interpreter.env = original_env
+                interpreter.in_function = False
+                return return_val
             def arity(self):
                 return len(params)
         self.env.define(name.lexeme, class_name)

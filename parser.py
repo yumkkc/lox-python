@@ -1,4 +1,4 @@
-from lox_ast import Expr, Binary, Unary, Literal, Grouping, Print, VarDecl, Variable, Assignment, Expression, Block, If, Logical, While, Caller, Function
+from lox_ast import Expr, Binary, Unary, Literal, Grouping, Print, VarDecl, Variable, Assignment, Expression, Block, If, Logical, While, Caller, Function, Return
 from token_type import TokenType
 from lex_token import Token
 from error import ParseError, parse_error
@@ -51,6 +51,9 @@ class Parser():
         
         if (self.match(TokenType.FUN)):
             return self.fun_statement()
+        
+        if (self.match(TokenType.RETURN)):
+            return self.return_statement()
 
         return self.expression_statement()
 
@@ -93,6 +96,11 @@ class Parser():
         self.consume(TokenType.LEFT_BRACE, "Expected '{' before function body")
         body = self.block_statement()
         return Function(fun_name, body, formal_params)
+    
+    def return_statement(self):
+        return_value = self.expression()
+        self.consume(TokenType.SEMICOLON, "Expected ';' after return statement")
+        return Return(return_value)
     
     def while_statement(self):
         self.consume(TokenType.LEFT_PAREN, "expected '(' after while statement")

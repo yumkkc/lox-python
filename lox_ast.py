@@ -92,3 +92,7 @@ class Function(Stmt):
     name: Token
     body: Declaration
     params: list
+
+@dataclass  
+class Return(Stmt):
+    value: Expr
